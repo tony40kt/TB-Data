@@ -232,6 +232,66 @@ export function softDeleteLog(id: number): void {
 }
 
 /**
+ * 搜尋日誌的輸入型別。
+ * keyword：模糊比對 location / machine_no / fault_code / remark（可留空）。
+ * start_date / end_date：限制 record_date 區間，格式 YYYY-MM-DD（可留空）。
+ */
+export interface SearchLogsInput {
+  /** 關鍵字，模糊比對 location / machine_no / fault_code / remark */
+  keyword?: string;
+  /** 起始日期（YYYY-MM-DD），包含當天 */
+  start_date?: string;
+  /** 結束日期（YYYY-MM-DD），包含當天 */
+  end_date?: string;
+}
+
+/**
+ * 多條件搜尋日誌，依記錄日期新到舊排序。
+ * - 預設排除已軟刪除的資料（deleted_at IS NULL）。
+ * - keyword 若有值，比對 location / machine_no / fault_code / remark（LIKE 模糊）。
+ * - start_date / end_date 若有值，套用到 record_date（>= / <=）。
+ *
+ * @param input - 搜尋條件
+ * @returns 符合條件的日誌陣列，若無結果則回傳空陣列
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function searchLogs(input: SearchLogsInput): LogRow[] {
+  try {
+    const db = getDb();
+    const conditions: string[] = ['deleted_at IS NULL'];
+    const params: (string | null)[] = [];
+
+    if (input.keyword && input.keyword.trim() !== '') {
+      // Escape LIKE special characters so they are treated as literals
+      const escaped = input.keyword.trim().replace(/[%_\\]/g, '\\$&');
+      const kw = `%${escaped}%`;
+      const likeClause =
+        "(location LIKE ? ESCAPE '\\' OR machine_no LIKE ? ESCAPE '\\'" +
+        " OR fault_code LIKE ? ESCAPE '\\' OR remark LIKE ? ESCAPE '\\')";
+      conditions.push(likeClause);
+      params.push(kw, kw, kw, kw);
+    }
+
+    if (input.start_date && input.start_date.trim() !== '') {
+      conditions.push('record_date >= ?');
+      params.push(input.start_date.trim());
+    }
+
+    if (input.end_date && input.end_date.trim() !== '') {
+      conditions.push('record_date <= ?');
+      params.push(input.end_date.trim());
+    }
+
+    const sql = `SELECT * FROM logs WHERE ${conditions.join(' AND ')} ORDER BY record_date DESC, id DESC`;
+    const rows = db.getAllSync<LogRow>(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('[DB] ❌ 搜尋日誌失敗：', error);
+    throw error;
+  }
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *
