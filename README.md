@@ -9,7 +9,7 @@
 - Package manager：npm
 - 平台：iOS（Phase 1~4）
 
-## Phase 1（單機離線���
+## Phase 1（單機離線)
 目標：在手機本機資料庫儲存工作日誌，支援 CRUD + 全欄位搜尋 + 多條件篩選 + 匯出。
 
 ### 工作日誌欄位（logs）
