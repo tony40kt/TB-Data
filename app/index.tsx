@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { initDb } from '../db/init';
-import { insertLog, getLatestLog } from '../db/logs';
+import { insertLog, getLatestLog, LogRow } from '../db/logs';
 
 type DbStatus = 'loading' | 'ready' | 'error';
 
@@ -15,7 +15,7 @@ export default function HomeScreen() {
 
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState<string>('');
-  const [latestLog, setLatestLog] = useState<Record<string, unknown> | null>(null);
+  const [latestLog, setLatestLog] = useState<LogRow | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -32,6 +32,11 @@ export default function HomeScreen() {
   }, []);
 
   function handleCreateTestLog() {
+    if (status !== 'ready') {
+      setInsertStatus('failure');
+      setInsertMsg('資料庫尚未就緒，請稍候再試。');
+      return;
+    }
     try {
       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
       const rowId = insertLog({

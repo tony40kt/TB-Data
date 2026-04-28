@@ -74,15 +74,35 @@ export function insertLog(input: NewLogInput): number {
 }
 
 /**
+ * logs 資料表的完整列型別（含系統欄位）。
+ * 與 db/init.ts 的 CREATE TABLE 一致。
+ */
+export interface LogRow {
+  id: number;
+  record_date: string;
+  location: string;
+  machine_no: string;
+  lift_system: string | null;
+  lift_software: string | null;
+  vfd_model: string | null;
+  vfd_software: string | null;
+  motor_model: string | null;
+  fault_code: string | null;
+  remark: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *
  * @returns 最新一筆日誌，若無資料則回傳 null
  */
-export function getLatestLog(): Record<string, unknown> | null {
+export function getLatestLog(): LogRow | null {
   try {
     const db = getDb();
-    const row = db.getFirstSync<Record<string, unknown>>(
+    const row = db.getFirstSync<LogRow>(
       'SELECT * FROM logs ORDER BY id DESC LIMIT 1',
     );
     return row ?? null;
