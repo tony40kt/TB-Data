@@ -88,6 +88,16 @@ export default function LogEditScreen() {
     return errors;
   }
 
+  // 成功後導回詳情頁（等成功狀態渲染後再跳轉，清理 timer 避免 memory leak）
+  useEffect(() => {
+    if (!submitSuccess) return;
+    const numId = Number(id);
+    const timer = setTimeout(() => {
+      router.replace(`/logs/${numId}`);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [submitSuccess, id, router]);
+
   function handleSave() {
     setValidationErrors([]);
     setSubmitError('');
@@ -116,9 +126,7 @@ export default function LogEditScreen() {
     try {
       updateLog(numId, input);
       setSubmitSuccess(true);
-      setTimeout(() => {
-        router.replace(`/logs/${numId}`);
-      }, 1000);
+      // 導航由 useEffect 在成功狀態渲染後執行
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setSubmitError(msg);
