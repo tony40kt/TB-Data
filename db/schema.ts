@@ -110,8 +110,8 @@ export const LOGS_SYSTEM_FIELDS: FieldDef[] = [
     name: 'id',
     label: 'ID',
     type: 'INTEGER',
-    required: true,
-    note: 'PRIMARY KEY AUTOINCREMENT，系統自動產生',
+    required: false,
+    note: 'PRIMARY KEY AUTOINCREMENT，系統自動產生，不由 UI 輸入，不納入表單必填驗證',
   },
   {
     name: 'created_at',
