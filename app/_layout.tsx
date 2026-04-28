@@ -6,7 +6,12 @@ export default function RootLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'TB-Data',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="(tabs)"
+        options={{
           headerShown: false,
         }}
       />
