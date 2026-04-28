@@ -94,6 +94,24 @@ export interface LogRow {
 }
 
 /**
+ * 查詢所有日誌，依記錄日期新到舊排序（日期相同時 id 新到舊）。
+ *
+ * @returns 日誌陣列，若無資料則回傳空陣列
+ */
+export function listLogs(): LogRow[] {
+  try {
+    const db = getDb();
+    const rows = db.getAllSync<LogRow>(
+      'SELECT * FROM logs ORDER BY record_date DESC, id DESC',
+    );
+    return rows;
+  } catch (error) {
+    console.error('[DB] ❌ 查詢日誌列表失敗：', error);
+    throw error;
+  }
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *

@@ -10,6 +10,20 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="logs/index"
+        options={{
+          title: '日誌列表',
+          headerBackTitle: '返回',
+        }}
+      />
+      <Stack.Screen
+        name="logs/[id]"
+        options={{
+          title: '日誌詳情',
+          headerBackTitle: '返回',
+        }}
+      />
     </Stack>
   );
 }

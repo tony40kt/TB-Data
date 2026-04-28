@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { initDb } from '../db/init';
 import { insertLog, getLatestLog, LogRow } from '../db/logs';
 
@@ -10,6 +11,7 @@ type DbStatus = 'loading' | 'ready' | 'error';
 type InsertStatus = 'idle' | 'success' | 'failure';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [status, setStatus] = useState<DbStatus>('loading');
   const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -81,6 +83,13 @@ export default function HomeScreen() {
             <Text style={styles.buttonText}>建立測試日誌</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={[styles.button, styles.buttonSecondary]}
+            onPress={() => router.push('/logs')}
+          >
+            <Text style={styles.buttonText}>前往日誌列表</Text>
+          </TouchableOpacity>
+
           {insertStatus === 'success' && (
             <View style={styles.resultBox}>
               <Text style={styles.successText}>{insertMsg}</Text>
@@ -137,6 +146,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     backgroundColor: '#2563EB',
     borderRadius: 8,
+  },
+  buttonSecondary: {
+    backgroundColor: '#0F766E',
   },
   buttonText: {
     fontSize: 16,
