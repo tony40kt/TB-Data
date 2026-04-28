@@ -232,6 +232,82 @@ export function softDeleteLog(id: number): void {
 }
 
 /**
+ * 多條件搜尋日誌的輸入型別。
+ * 所有欄位均可選；未傳入的欄位不加入 WHERE 條件。
+ */
+export interface SearchLogsInput {
+  /** 關鍵字：模糊比對 location、machine_no、fault_code、remark */
+  keyword?: string;
+  /** 地點（精確包含比對，LIKE %value%） */
+  location?: string;
+  /** 機號（精確包含比對，LIKE %value%） */
+  machine_no?: string;
+  /** 故障碼（精確包含比對，LIKE %value%） */
+  fault_code?: string;
+  /** 記錄日期起（含，格式 YYYY-MM-DD） */
+  record_date_from?: string;
+  /** 記錄日期迄（含，格式 YYYY-MM-DD） */
+  record_date_to?: string;
+}
+
+/**
+ * 多條件搜尋日誌，預設排除已軟刪除資料。
+ * 各條件之間以 AND 連接；未傳入的條件不加入 WHERE。
+ *
+ * @param input - 搜尋條件（全部可選）
+ * @returns 符合條件的日誌陣列，依記錄日期新到舊排序
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function searchLogs(input: SearchLogsInput): LogRow[] {
+  try {
+    const db = getDb();
+    const conditions: string[] = ['deleted_at IS NULL'];
+    const params: (string | null)[] = [];
+
+    if (input.keyword && input.keyword.trim() !== '') {
+      const like = `%${input.keyword.trim()}%`;
+      conditions.push(
+        '(location LIKE ? OR machine_no LIKE ? OR fault_code LIKE ? OR remark LIKE ?)',
+      );
+      params.push(like, like, like, like);
+    }
+
+    if (input.location && input.location.trim() !== '') {
+      conditions.push('location LIKE ?');
+      params.push(`%${input.location.trim()}%`);
+    }
+
+    if (input.machine_no && input.machine_no.trim() !== '') {
+      conditions.push('machine_no LIKE ?');
+      params.push(`%${input.machine_no.trim()}%`);
+    }
+
+    if (input.fault_code && input.fault_code.trim() !== '') {
+      conditions.push('fault_code LIKE ?');
+      params.push(`%${input.fault_code.trim()}%`);
+    }
+
+    if (input.record_date_from && input.record_date_from.trim() !== '') {
+      conditions.push('record_date >= ?');
+      params.push(input.record_date_from.trim());
+    }
+
+    if (input.record_date_to && input.record_date_to.trim() !== '') {
+      conditions.push('record_date <= ?');
+      params.push(input.record_date_to.trim());
+    }
+
+    const sql = `SELECT * FROM logs WHERE ${conditions.join(' AND ')} ORDER BY record_date DESC, id DESC`;
+    const rows = db.getAllSync<LogRow>(sql, params);
+    console.log(`[DB] ✅ 搜尋日誌完成，共 ${rows.length} 筆`);
+    return rows;
+  } catch (error) {
+    console.error('[DB] ❌ 搜尋日誌失敗：', error);
+    throw error;
+  }
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *
