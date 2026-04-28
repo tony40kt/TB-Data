@@ -232,6 +232,111 @@ export function softDeleteLog(id: number): void {
 }
 
 /**
+ * 多條件搜尋日誌所需的輸入型別。
+ * 所有欄位均為選填；未提供的條件不會加入 WHERE 子句。
+ */
+export type SearchLogsInput = {
+  /** 關鍵字：對 location / machine_no / fault_code / remark 做 LIKE 搜尋 */
+  keyword?: string;
+  /** 記錄日期起始（含），格式 YYYY-MM-DD */
+  startDate?: string;
+  /** 記錄日期結束（含），格式 YYYY-MM-DD */
+  endDate?: string;
+  /** 工作地點（完全/部分符合） */
+  location?: string;
+  /** 機號（完全/部分符合） */
+  machineNo?: string;
+  /** 故障碼（完全/部分符合） */
+  faultCode?: string;
+};
+
+/** 日期格式 YYYY-MM-DD 的正規表達式 */
+const DATE_FORMAT_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * 將字串中的 LIKE 特殊字元（%、_、\）跳脫，避免被當作萬用字元。
+ * 使用 SQLite 的 ESCAPE '\\' 語法配合此函式。
+ * 注意：必須先跳脫反斜線，再跳脫萬用字元，避免雙重跳脫。
+ */
+function escapeLike(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
+/**
+ * 驗證字串是否為語意合法的 YYYY-MM-DD 日期。
+ * 僅驗證格式無法捕捉 2024-02-30 等無效日期，故再以 Date 物件做語意驗證。
+ */
+function isValidDate(value: string): boolean {
+  if (!DATE_FORMAT_RE.test(value)) return false;
+  const [y, m, d] = value.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() + 1 === m && dt.getUTCDate() === d;
+}
+
+/**
+ * 多條件搜尋日誌，依記錄日期新到舊排序（日期相同時 id 新到舊）。
+ * 預設排除已軟刪除的資料（deleted_at IS NULL）。
+ * 未提供的條件不會加入 WHERE 子句。
+ *
+ * @param input - 搜尋條件
+ * @returns 符合條件的日誌陣列，若無結果則回傳空陣列
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function searchLogs(input: SearchLogsInput): LogRow[] {
+  try {
+    const db = getDb();
+    const conditions: string[] = ['deleted_at IS NULL'];
+    const params: (string | number | null)[] = [];
+
+    if (input.keyword) {
+      const like = `%${escapeLike(input.keyword)}%`;
+      conditions.push(
+        "(location LIKE ? ESCAPE '\\' OR machine_no LIKE ? ESCAPE '\\' OR fault_code LIKE ? ESCAPE '\\' OR remark LIKE ? ESCAPE '\\')",
+      );
+      params.push(like, like, like, like);
+    }
+
+    if (input.startDate) {
+      if (!isValidDate(input.startDate)) {
+        throw new Error(`startDate 格式無效（應為 YYYY-MM-DD）：${input.startDate}`);
+      }
+      conditions.push('record_date >= ?');
+      params.push(input.startDate);
+    }
+
+    if (input.endDate) {
+      if (!isValidDate(input.endDate)) {
+        throw new Error(`endDate 格式無效（應為 YYYY-MM-DD）：${input.endDate}`);
+      }
+      conditions.push('record_date <= ?');
+      params.push(input.endDate);
+    }
+
+    if (input.location) {
+      conditions.push("location LIKE ? ESCAPE '\\'");
+      params.push(`%${escapeLike(input.location)}%`);
+    }
+
+    if (input.machineNo) {
+      conditions.push("machine_no LIKE ? ESCAPE '\\'");
+      params.push(`%${escapeLike(input.machineNo)}%`);
+    }
+
+    if (input.faultCode) {
+      conditions.push("fault_code LIKE ? ESCAPE '\\'");
+      params.push(`%${escapeLike(input.faultCode)}%`);
+    }
+
+    const sql = `SELECT * FROM logs WHERE ${conditions.join(' AND ')} ORDER BY record_date DESC, id DESC`;
+    const rows = db.getAllSync<LogRow>(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('[DB] ❌ 搜尋日誌失敗：', error);
+    throw error;
+  }
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *
