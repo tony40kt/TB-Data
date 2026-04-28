@@ -112,6 +112,27 @@ export function listLogs(): LogRow[] {
 }
 
 /**
+ * 依 id 查詢單筆日誌。
+ *
+ * @param id - 日誌的主鍵 id
+ * @returns 對應的日誌列，若找不到則回傳 null
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function getLogById(id: number): LogRow | null {
+  try {
+    const db = getDb();
+    const row = db.getFirstSync<LogRow>(
+      'SELECT * FROM logs WHERE id = ? LIMIT 1',
+      [id],
+    );
+    return row ?? null;
+  } catch (error) {
+    console.error(`[DB] ❌ 查詢日誌詳情失敗（id=${id}）：`, error);
+    throw error;
+  }
+}
+
+/**
  * 查詢最新一筆日誌（依 id 降序取第一筆）。
  * 可用於插入後的自我驗證。
  *
