@@ -112,6 +112,80 @@ export function listLogs(): LogRow[] {
 }
 
 /**
+ * 更新日誌所需的輸入型別。
+ * 必填：record_date、location、machine_no；其餘欄位可省略（允許空值）。
+ */
+export interface UpdateLogInput {
+  /** 記錄日期，格式 YYYY-MM-DD（必填） */
+  record_date: string;
+  /** 工作地點（必填） */
+  location: string;
+  /** 機號，僅英文字母與數字（必填） */
+  machine_no: string;
+  /** 升降機系統（選填） */
+  lift_system?: string;
+  /** 升降機軟件（選填） */
+  lift_software?: string;
+  /** 變頻型號（選填） */
+  vfd_model?: string;
+  /** 變頻軟件（選填） */
+  vfd_software?: string;
+  /** 摩打型號（選填） */
+  motor_model?: string;
+  /** 故障碼（選填） */
+  fault_code?: string;
+  /** 備註（選填） */
+  remark?: string;
+}
+
+/**
+ * 更新指定 id 的日誌，回傳影響的列數。
+ * updated_at 由資料庫 trigger 自動更新，不需手動傳入。
+ *
+ * @param id - 要更新的日誌 id
+ * @param input - 更新日誌的輸入資料
+ * @returns 影響的列數（成功為 1）
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function updateLog(id: number, input: UpdateLogInput): number {
+  try {
+    const db = getDb();
+    const result = db.runSync(
+      `UPDATE logs SET
+        record_date = ?,
+        location = ?,
+        machine_no = ?,
+        lift_system = ?,
+        lift_software = ?,
+        vfd_model = ?,
+        vfd_software = ?,
+        motor_model = ?,
+        fault_code = ?,
+        remark = ?
+      WHERE id = ?`,
+      [
+        input.record_date,
+        input.location,
+        input.machine_no,
+        input.lift_system ?? null,
+        input.lift_software ?? null,
+        input.vfd_model ?? null,
+        input.vfd_software ?? null,
+        input.motor_model ?? null,
+        input.fault_code ?? null,
+        input.remark ?? null,
+        id,
+      ],
+    );
+    console.log(`[DB] ✅ 已更新日誌（id=${id}），影響列數 = ${result.changes}`);
+    return result.changes;
+  } catch (error) {
+    console.error(`[DB] ❌ 更新日誌失敗（id=${id}）：`, error);
+    throw error;
+  }
+}
+
+/**
  * 依 id 查詢單筆日誌。
  *
  * @param id - 日誌的主鍵 id

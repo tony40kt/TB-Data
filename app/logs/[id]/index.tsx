@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getLogById, LogRow } from '../../db/logs';
+import { getLogById, LogRow } from '../../../db/logs';
 
 type LoadState = 'loading' | 'found' | 'not_found' | 'error';
 
@@ -117,8 +117,11 @@ export default function LogDetailScreen() {
           <Text style={styles.backBtnText}>← 返回列表</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionBtn, styles.disabled]} disabled>
-          <Text style={styles.actionBtnText}>編輯（待完成）</Text>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.editBtn]}
+          onPress={() => router.push(`/logs/${id}/edit`)}
+        >
+          <Text style={styles.editBtnText}>✏️ 編輯</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.actionBtn, styles.disabled]} disabled>
@@ -206,6 +209,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+  editBtn: {
+    backgroundColor: '#F59E0B',
+  },
+  editBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
   disabled: {
     backgroundColor: '#E2E8F0',

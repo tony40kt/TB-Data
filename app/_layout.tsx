@@ -18,9 +18,16 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen
-        name="logs/[id]"
+        name="logs/[id]/index"
         options={{
           title: '日誌詳情',
+          headerBackTitle: '返回',
+        }}
+      />
+      <Stack.Screen
+        name="logs/[id]/edit"
+        options={{
+          title: '編輯日誌',
           headerBackTitle: '返回',
         }}
       />
