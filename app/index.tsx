@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { initDb } from '../db/init';
+import { insertLog, getLatestLog } from '../db/logs';
 
 type DbStatus = 'loading' | 'ready' | 'error';
+
+/** 測試日誌寫入後的顯示狀態 */
+type InsertStatus = 'idle' | 'success' | 'failure';
 
 export default function HomeScreen() {
   const [status, setStatus] = useState<DbStatus>('loading');
   const [errorMsg, setErrorMsg] = useState<string>('');
+
+  const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
+  const [insertMsg, setInsertMsg] = useState<string>('');
+  const [latestLog, setLatestLog] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -22,6 +30,30 @@ export default function HomeScreen() {
     };
     run();
   }, []);
+
+  function handleCreateTestLog() {
+    try {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const rowId = insertLog({
+        record_date: today,
+        location: '測試地點',
+        machine_no: 'TEST01',
+        lift_system: '測試升降機系統',
+        fault_code: '999',
+        remark: '這是一筆由首頁 debug 按鈕建立的測試日誌',
+      });
+      const latest = getLatestLog();
+      setInsertStatus('success');
+      setInsertMsg(`✅ 已新增 1 筆日誌（rowId = ${rowId}）`);
+      setLatestLog(latest);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[UI] ❌ 新增日誌失敗：', msg, err);
+      setInsertStatus('failure');
+      setInsertMsg(`新增失敗：${msg}`);
+      setLatestLog(null);
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -39,6 +71,27 @@ export default function HomeScreen() {
           <Text style={styles.icon}>✅</Text>
           <Text style={styles.title}>TB-Data</Text>
           <Text style={styles.text}>資料庫初始化成功</Text>
+
+          <TouchableOpacity style={styles.button} onPress={handleCreateTestLog}>
+            <Text style={styles.buttonText}>建立測試日誌</Text>
+          </TouchableOpacity>
+
+          {insertStatus === 'success' && (
+            <View style={styles.resultBox}>
+              <Text style={styles.successText}>{insertMsg}</Text>
+              {latestLog && (
+                <Text style={styles.detailText}>
+                  {`日期：${latestLog.record_date}　地點：${latestLog.location}　機號：${latestLog.machine_no}`}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {insertStatus === 'failure' && (
+            <View style={styles.resultBox}>
+              <Text style={styles.errorText}>{insertMsg}</Text>
+            </View>
+          )}
         </>
       )}
 
@@ -72,6 +125,33 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     color: '#475569',
+  },
+  button: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    backgroundColor: '#2563EB',
+    borderRadius: 8,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  resultBox: {
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 24,
+  },
+  successText: {
+    fontSize: 15,
+    color: '#16A34A',
+    textAlign: 'center',
+  },
+  detailText: {
+    fontSize: 13,
+    color: '#475569',
+    textAlign: 'center',
   },
   errorText: {
     fontSize: 14,
