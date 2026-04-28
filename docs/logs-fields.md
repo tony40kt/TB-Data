@@ -36,6 +36,7 @@
 | `id` | ID | INTEGER | — | `PRIMARY KEY AUTOINCREMENT`，系統自動產生，不由 UI 輸入 |
 | `created_at` | 建立時間 | TEXT | `datetime('now')` | INSERT 時自動填入，不可修改 |
 | `updated_at` | 更新時間 | TEXT | `datetime('now')` | 由 trigger `logs_updated_at` 在每次 UPDATE 後自動更新 |
+| `deleted_at` | 刪除時間 | TEXT | NULL | NULL 表示未刪除；有值表示軟刪除時間（ISO 8601 字串）。刪除操作不做 DELETE，僅更新此欄位。 |
 
 ---
 
@@ -48,4 +49,4 @@
 
 ---
 
-*最後更新：對應 Issue #9（defines logs schema, closes #9）*
+*最後更新：對應 Issue #18（soft delete, closes #18）*
