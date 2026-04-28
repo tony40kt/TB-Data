@@ -10,13 +10,17 @@ export default function HomeScreen() {
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   useEffect(() => {
-    try {
-      initDb();
-      setStatus('ready');
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : String(err));
-      setStatus('error');
-    }
+    const run = async () => {
+      await Promise.resolve(); // yield to React so 'loading' renders first
+      try {
+        initDb();
+        setStatus('ready');
+      } catch (err: unknown) {
+        setErrorMsg(err instanceof Error ? err.message : String(err));
+        setStatus('error');
+      }
+    };
+    run();
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 
-const DB_NAME = 'tb-data.db';
+const DB_NAME = 'tb_data.db';
 
 let _db: SQLite.SQLiteDatabase | null = null;
 
