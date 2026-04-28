@@ -34,8 +34,8 @@ export const LOGS_BUSINESS_FIELDS: FieldDef[] = [
     label: '記錄日期',
     type: 'TEXT',
     required: true,
-    defaultValue: "date('now')",
-    note: '格式 YYYY-MM-DD；UI 預設今天，可修改',
+    // DB 層無 DEFAULT；應用層（UI）應以當天日期作為預設值，使用者可修改
+    note: '格式 YYYY-MM-DD；UI 預設今天，可修改（由應用層傳入，DB 層無預設值）',
   },
   {
     name: 'location',
