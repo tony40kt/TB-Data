@@ -47,6 +47,15 @@ export function initDb(): void {
       END;
     `);
 
+    // Migration：若 deleted_at 欄位不存在則補上（支援舊有資料庫不報錯）
+    type PragmaRow = { name: string };
+    const columns = db.getAllSync<PragmaRow>('PRAGMA table_info(logs)');
+    const hasDeletedAt = columns.some((col) => col.name === 'deleted_at');
+    if (!hasDeletedAt) {
+      db.execSync('ALTER TABLE logs ADD COLUMN deleted_at TEXT');
+      console.log('[DB] ✅ 已新增 deleted_at 欄位（migration）');
+    }
+
     console.log('[DB] ✅ 資料庫初始化成功（logs 資料表已就緒）');
   } catch (error) {
     console.error('[DB] ❌ 資料庫初始化失敗：', error);
