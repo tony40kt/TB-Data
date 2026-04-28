@@ -129,6 +129,13 @@ export const LOGS_SYSTEM_FIELDS: FieldDef[] = [
     defaultValue: "datetime('now')",
     note: 'ISO 8601 字串；UPDATE 時由 trigger logs_updated_at 自動更新',
   },
+  {
+    name: 'deleted_at',
+    label: '刪除時間',
+    type: 'TEXT',
+    required: false,
+    note: 'NULL 表示未刪除；有值表示軟刪除時間（ISO 8601 字串）。刪除操作不做 DELETE，僅更新此欄位。',
+  },
 ];
 
 /**

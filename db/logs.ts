@@ -91,10 +91,12 @@ export interface LogRow {
   remark: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 /**
  * 查詢所有日誌，依記錄日期新到舊排序（日期相同時 id 新到舊）。
+ * 預設排除已軟刪除的資料（deleted_at IS NULL）。
  *
  * @returns 日誌陣列，若無資料則回傳空陣列
  */
@@ -102,7 +104,7 @@ export function listLogs(): LogRow[] {
   try {
     const db = getDb();
     const rows = db.getAllSync<LogRow>(
-      'SELECT * FROM logs ORDER BY record_date DESC, id DESC',
+      'SELECT * FROM logs WHERE deleted_at IS NULL ORDER BY record_date DESC, id DESC',
     );
     return rows;
   } catch (error) {
@@ -188,6 +190,7 @@ export function updateLog(id: number, input: UpdateLogInput): number {
 
 /**
  * 依 id 查詢單筆日誌。
+ * 預設排除已軟刪除的資料（deleted_at IS NULL）。
  *
  * @param id - 日誌的主鍵 id
  * @returns 對應的日誌列，若找不到則回傳 null
@@ -197,12 +200,33 @@ export function getLogById(id: number): LogRow | null {
   try {
     const db = getDb();
     const row = db.getFirstSync<LogRow>(
-      'SELECT * FROM logs WHERE id = ? LIMIT 1',
+      'SELECT * FROM logs WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [id],
     );
     return row ?? null;
   } catch (error) {
     console.error(`[DB] ❌ 查詢日誌詳情失敗（id=${id}）：`, error);
+    throw error;
+  }
+}
+
+/**
+ * 軟刪除一筆日誌（更新 deleted_at，不做 DELETE）。
+ * 若該筆已刪除則不做任何更新。
+ *
+ * @param id - 日誌的主鍵 id
+ * @throws 若資料庫操作失敗，拋出錯誤
+ */
+export function softDeleteLog(id: number): void {
+  try {
+    const db = getDb();
+    db.runSync(
+      "UPDATE logs SET deleted_at = datetime('now') WHERE id = ? AND deleted_at IS NULL",
+      [id],
+    );
+    console.log(`[DB] ✅ 已軟刪除日誌（id=${id}）`);
+  } catch (error) {
+    console.error(`[DB] ❌ 軟刪除日誌失敗（id=${id}）：`, error);
     throw error;
   }
 }

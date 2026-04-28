@@ -5,9 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getLogById, LogRow } from '../../../db/logs';
+import { getLogById, softDeleteLog, LogRow } from '../../../db/logs';
 
 type LoadState = 'loading' | 'found' | 'not_found' | 'error';
 
@@ -23,6 +24,7 @@ export default function LogDetailScreen() {
   const [state, setState] = useState<LoadState>('loading');
   const [log, setLog] = useState<LogRow | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     try {
@@ -97,6 +99,36 @@ export default function LogDetailScreen() {
     { label: '更新時間', value: display(log?.updated_at) },
   ];
 
+  function handleDelete() {
+    Alert.alert(
+      '確認刪除',
+      '確定要刪除此日誌嗎？此操作不可復原。',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '確認刪除',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              const numId = Number(id);
+              setIsDeleting(true);
+              softDeleteLog(numId);
+              setIsDeleting(false);
+              Alert.alert('已刪除', '日誌已成功刪除。', [
+                { text: '確定', onPress: () => router.replace('/logs') },
+              ]);
+            } catch (err) {
+              setIsDeleting(false);
+              const msg = err instanceof Error ? err.message : String(err);
+              console.error('[UI] ❌ 刪除日誌失敗：', err);
+              Alert.alert('刪除失敗', msg);
+            }
+          },
+        },
+      ],
+    );
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -124,8 +156,14 @@ export default function LogDetailScreen() {
           <Text style={styles.editBtnText}>✏️ 編輯</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionBtn, styles.disabled]} disabled>
-          <Text style={styles.actionBtnText}>刪除（待完成）</Text>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.deleteBtn, isDeleting && styles.disabled]}
+          disabled={isDeleting}
+          onPress={handleDelete}
+        >
+          <Text style={styles.deleteBtnText}>
+            {isDeleting ? '刪除中…' : '刪除'}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -223,6 +261,14 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     color: '#94A3B8',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  deleteBtn: {
+    backgroundColor: '#DC2626',
+  },
+  deleteBtnText: {
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '600',
   },
