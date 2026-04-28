@@ -141,10 +141,11 @@ export interface UpdateLogInput {
 /**
  * 更新指定 id 的日誌，回傳影響的列數。
  * updated_at 由資料庫 trigger 自動更新，不需手動傳入。
+ * 已軟刪除（deleted_at IS NOT NULL）的日誌不會被更新。
  *
  * @param id - 要更新的日誌 id
  * @param input - 更新日誌的輸入資料
- * @returns 影響的列數（成功為 1）
+ * @returns 影響的列數（成功為 1；若找不到或已刪除則為 0）
  * @throws 若資料庫操作失敗，拋出錯誤
  */
 export function updateLog(id: number, input: UpdateLogInput): number {
@@ -162,7 +163,7 @@ export function updateLog(id: number, input: UpdateLogInput): number {
         motor_model = ?,
         fault_code = ?,
         remark = ?
-      WHERE id = ?`,
+      WHERE id = ? AND deleted_at IS NULL`,
       [
         input.record_date,
         input.location,
