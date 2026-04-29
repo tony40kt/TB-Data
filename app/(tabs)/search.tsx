@@ -194,7 +194,7 @@ export default function SearchScreen() {
             onChangeText={setFaultCode}
             returnKeyType="search"
             onSubmitEditing={handleSearch}
-            keyboardType="default"
+            keyboardType="number-pad"
           />
 
           <View style={styles.btnRow}>
