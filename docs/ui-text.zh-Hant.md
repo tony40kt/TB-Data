@@ -75,6 +75,8 @@
 | `settings.current_role` | 設定頁 — 目前角色標籤 | 目前角色： | #32 |
 | `settings.role_switched` | 設定頁 — 切換角色成功提示 | ✅ 已切換為：{roleName} | `{roleName}` 為繁中角色名稱；#32 |
 
+---
+
 ## 三、欄位標籤與佔位文字
 
 | 欄位名稱（DB） | UI 標籤 | Placeholder | 必填 |
