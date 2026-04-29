@@ -18,6 +18,14 @@ const ROLE_BUTTONS: { role: Role; label: string }[] = [
   { role: 'guest', label: '訪客' },
 ];
 
+function getRoleHint(r: Role): string {
+  switch (r) {
+    case 'admin': return '管理員：全功能';
+    case 'user':  return '一般使用者：不可匯出資料';
+    case 'guest': return '訪客：唯讀（不可新增／編輯／刪除）';
+  }
+}
+
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
   const [switchMsg, setSwitchMsg] = useState('');
@@ -95,6 +103,8 @@ export default function SettingsScreen() {
       {switchMsg !== '' && (
         <Text style={styles.switchMsg}>{switchMsg}</Text>
       )}
+
+      <Text style={styles.roleHint}>{getRoleHint(role)}</Text>
 
       <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={handleCreateTestLog}>
         <Text style={styles.buttonText}>建立測試日誌</Text>
@@ -185,6 +195,11 @@ const styles = StyleSheet.create({
   switchMsg: {
     fontSize: 14,
     color: '#16A34A',
+    textAlign: 'center',
+  },
+  roleHint: {
+    fontSize: 13,
+    color: '#64748B',
     textAlign: 'center',
   },
   button: {
