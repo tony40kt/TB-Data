@@ -11,6 +11,7 @@ import {
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const ALPHANUMERIC_DOT_REGEX = /^[A-Za-z0-9.]+$/;
+const FAULT_CODE_REGEX = /^\d+$/;
 
 function getTodayString(): string {
   const d = new Date();
@@ -62,6 +63,9 @@ export default function AddScreen() {
     }
     if (motor_model.trim() && !ALPHANUMERIC_DOT_REGEX.test(motor_model.trim())) {
       errors.push('摩打型號只能輸入英文/數字/句點(.)');
+    }
+    if (fault_code.trim() && !FAULT_CODE_REGEX.test(fault_code.trim())) {
+      errors.push('故障碼只能輸入數字');
     }
     return errors;
   }
@@ -218,7 +222,7 @@ export default function AddScreen() {
           onChangeText={setFaultCode}
           placeholder="（選填）"
           placeholderTextColor="#94A3B8"
-          autoCapitalize="characters"
+          keyboardType="number-pad"
         />
       </View>
 
