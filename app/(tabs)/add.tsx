@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { isValidDateYYYYMMDD } from '../../utils/validation';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const ALPHANUMERIC_DOT_REGEX = /^[A-Za-z0-9.]+$/;
@@ -41,11 +42,8 @@ export default function AddScreen() {
       errors.push('記錄日期不可空白');
     } else if (!DATE_REGEX.test(record_date.trim())) {
       errors.push('記錄日期格式必須為 YYYY-MM-DD');
-    } else {
-      const d = new Date(record_date.trim());
-      if (isNaN(d.getTime())) {
-        errors.push('記錄日期不是有效日期');
-      }
+    } else if (!isValidDateYYYYMMDD(record_date.trim())) {
+      errors.push('記錄日期不是有效日期');
     }
     if (!location.trim()) {
       errors.push('地點不可空白');

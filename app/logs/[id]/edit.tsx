@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getLogById, updateLog, UpdateLogInput } from '../../../db/logs';
+import { isValidDateYYYYMMDD } from '../../../utils/validation';
 
 type LoadState = 'loading' | 'ready' | 'not_found' | 'load_error';
 
@@ -77,6 +78,8 @@ export default function LogEditScreen() {
       errors.push('記錄日期不可空白');
     } else if (!DATE_REGEX.test(record_date.trim())) {
       errors.push('記錄日期格式必須為 YYYY-MM-DD');
+    } else if (!isValidDateYYYYMMDD(record_date.trim())) {
+      errors.push('記錄日期不是有效日期');
     }
     if (!location.trim()) {
       errors.push('地點不可空白');
