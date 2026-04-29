@@ -74,6 +74,14 @@
 | `role.guest` | 設定頁 — guest 角色繁中名稱 | 訪客 | #32 |
 | `settings.current_role` | 設定頁 — 目前角色標籤 | 目前角色： | #32 |
 | `settings.role_switched` | 設定頁 — 切換角色成功提示 | ✅ 已切換為：{roleName} | `{roleName}` 為繁中角色名稱；#32 |
+| `settings.role_hint_admin` | 設定頁 — admin 角色限制提示 | 管理員：全功能 | #32 |
+| `settings.role_hint_user` | 設定頁 — user 角色限制提示 | 一般使用者：不可匯出資料 | #32 |
+| `settings.role_hint_guest` | 設定頁 — guest 角色限制提示 | 訪客：唯讀（不可新增／編輯／刪除） | #32 |
+| `perm.guest.no_add` | 新增頁 — 訪客無法新增記錄 | 🔒 訪客不可新增記錄 | #33 |
+| `perm.guest.no_edit` | 詳情頁 / 編輯頁 — 訪客無法編輯記錄 | 🔒 訪客不可編輯記錄 | #33 |
+| `perm.guest.no_delete` | 詳情頁 — 訪客無法刪除記錄 | 🔒 訪客不可刪除記錄 | #33 |
+| `perm.user.no_export` | 搜尋頁 — 一般使用者無法匯出 | 🔒 一般使用者不可匯出資料 | #33 |
+| `perm.guest.no_export` | 搜尋頁 — 訪客無法匯出 | 🔒 訪客不可匯出資料 | #33 |
 
 ---
 

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getLogById, softDeleteLog, LogRow } from '../../../db/logs';
+import { useRole } from '../../../context/RoleContext';
 
 type LoadState = 'loading' | 'found' | 'not_found' | 'error';
 
@@ -20,6 +21,8 @@ function display(value: string | null | undefined): string {
 export default function LogDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { role } = useRole();
+  const isGuest = role === 'guest';
 
   const [state, setState] = useState<LoadState>('loading');
   const [log, setLog] = useState<LogRow | null>(null);
@@ -150,21 +153,28 @@ export default function LogDetailScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.actionBtn, styles.editBtn]}
+          style={[styles.actionBtn, styles.editBtn, isGuest && styles.btnDisabled]}
+          disabled={isGuest}
           onPress={() => router.push(`/logs/${id}/edit`)}
         >
-          <Text style={styles.editBtnText}>✏️ 編輯</Text>
+          <Text style={[styles.editBtnText, isGuest && styles.disabledBtnText]}>✏️ 編輯</Text>
         </TouchableOpacity>
+        {isGuest && (
+          <Text style={styles.permissionHint}>🔒 訪客不可編輯記錄</Text>
+        )}
 
         <TouchableOpacity
-          style={[styles.actionBtn, styles.deleteBtn, isDeleting && styles.disabled]}
-          disabled={isDeleting}
+          style={[styles.actionBtn, styles.deleteBtn, (isDeleting || isGuest) && styles.btnDisabled]}
+          disabled={isDeleting || isGuest}
           onPress={handleDelete}
         >
           <Text style={styles.deleteBtnText}>
             {isDeleting ? '刪除中…' : '刪除'}
           </Text>
         </TouchableOpacity>
+        {isGuest && (
+          <Text style={styles.permissionHint}>🔒 訪客不可刪除記錄</Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -258,6 +268,17 @@ const styles = StyleSheet.create({
   },
   disabled: {
     backgroundColor: '#E2E8F0',
+  },
+  btnDisabled: {
+    backgroundColor: '#CBD5E1',
+  },
+  disabledBtnText: {
+    color: '#94A3B8',
+  },
+  permissionHint: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
   },
   actionBtnText: {
     color: '#94A3B8',

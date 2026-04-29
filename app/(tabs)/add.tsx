@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { isValidDateYYYYMMDD } from '../../utils/validation';
+import { useRole } from '../../context/RoleContext';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const ALPHANUMERIC_DOT_REGEX = /^[A-Za-z0-9.]+$/;
@@ -23,6 +24,9 @@ function getTodayString(): string {
 }
 
 export default function AddScreen() {
+  const { role } = useRole();
+  const isGuest = role === 'guest';
+
   const [record_date, setRecordDate] = useState(getTodayString());
   const [location, setLocation] = useState('');
   const [machine_no, setMachineNo] = useState('');
@@ -240,9 +244,16 @@ export default function AddScreen() {
 
       {/* 操作按鈕 */}
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+        <TouchableOpacity
+          style={[styles.saveBtn, isGuest && styles.btnDisabled]}
+          onPress={handleSave}
+          disabled={isGuest}
+        >
           <Text style={styles.saveBtnText}>💾 儲存</Text>
         </TouchableOpacity>
+        {isGuest && (
+          <Text style={styles.permissionHint}>🔒 訪客不可新增記錄</Text>
+        )}
 
         <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
           <Text style={styles.resetBtnText}>🔄 清除</Text>
@@ -315,6 +326,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  btnDisabled: {
+    backgroundColor: '#CBD5E1',
+  },
+  permissionHint: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
   },
   saveBtnText: {
     color: '#FFFFFF',

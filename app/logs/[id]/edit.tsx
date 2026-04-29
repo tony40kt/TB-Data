@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getLogById, updateLog, UpdateLogInput } from '../../../db/logs';
 import { isValidDateYYYYMMDD } from '../../../utils/validation';
+import { useRole } from '../../../context/RoleContext';
 
 type LoadState = 'loading' | 'ready' | 'not_found' | 'load_error';
 
@@ -21,6 +22,8 @@ const FAULT_CODE_REGEX = /^\d+$/;
 export default function LogEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { role } = useRole();
+  const isGuest = role === 'guest';
 
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMsg, setLoadErrorMsg] = useState('');
@@ -354,12 +357,15 @@ export default function LogEditScreen() {
       {/* 操作按鈕 */}
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.saveBtn, submitSuccess && styles.saveBtnDisabled]}
+          style={[styles.saveBtn, (submitSuccess || isGuest) && styles.saveBtnDisabled]}
           onPress={handleSave}
-          disabled={submitSuccess}
+          disabled={submitSuccess || isGuest}
         >
           <Text style={styles.saveBtnText}>💾 儲存</Text>
         </TouchableOpacity>
+        {isGuest && (
+          <Text style={styles.permissionHint}>🔒 訪客不可編輯記錄</Text>
+        )}
 
         <TouchableOpacity
           style={styles.cancelBtn}
@@ -487,5 +493,10 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontSize: 15,
     fontWeight: '600',
+  },
+  permissionHint: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
   },
 });
