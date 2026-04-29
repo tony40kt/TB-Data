@@ -69,8 +69,11 @@
 | `status.search_no_result` | 搜尋有結果但為 0 筆 | 找不到符合條件的日誌 | |
 | `status.search_result_count` | 搜尋完成後顯示筆數 | 共 {count} 筆結果 | `{count}` 為筆數 |
 | `status.deleting` | 刪除操作進行中（按鈕文字） | 刪除中… | 按鈕禁用狀態 |
-
----
+| `role.admin` | 設定頁 — admin 角色繁中名稱 | 管理員 | #32 |
+| `role.user` | 設定頁 — user 角色繁中名稱 | 一般使用者 | #32 |
+| `role.guest` | 設定頁 — guest 角色繁中名稱 | 訪客 | #32 |
+| `settings.current_role` | 設定頁 — 目前角色標籤 | 目前角色： | #32 |
+| `settings.role_switched` | 設定頁 — 切換角色成功提示 | ✅ 已切換為：{roleName} | `{roleName}` 為繁中角色名稱；#32 |
 
 ## 三、欄位標籤與佔位文字
 

@@ -1,16 +1,37 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
 import { insertLog, getLatestLog, LogRow } from '../../db/logs';
+import { useRole, Role } from '../../context/RoleContext';
 
 type InsertStatus = 'idle' | 'success' | 'failure';
 
+const ROLE_LABELS: Record<Role, string> = {
+  admin: '管理員',
+  user: '一般使用者',
+  guest: '訪客',
+};
+
+const ROLE_BUTTONS: { role: Role; label: string }[] = [
+  { role: 'admin', label: '管理員' },
+  { role: 'user', label: '一般使用者' },
+  { role: 'guest', label: '訪客' },
+];
+
 export default function SettingsScreen() {
+  const { role, setRole, isLoading } = useRole();
+  const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
   const [latestLog, setLatestLog] = useState<LogRow | null>(null);
 
   const version = Constants.expoConfig?.version ?? '—';
+
+  async function handleRoleSwitch(newRole: Role) {
+    if (newRole === role) return;
+    await setRole(newRole);
+    setSwitchMsg(`✅ 已切換為：${ROLE_LABELS[newRole]}`);
+  }
 
   function handleCreateTestLog() {
     try {
@@ -36,13 +57,46 @@ export default function SettingsScreen() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#2563EB" />
+        <Text style={styles.version}>讀取中…</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>⚙️</Text>
       <Text style={styles.title}>設定</Text>
       <Text style={styles.version}>版本：{version}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleCreateTestLog}>
+      <View style={styles.roleSection}>
+        <Text style={styles.roleLabel}>目前角色：</Text>
+        <Text style={styles.roleValue}>{ROLE_LABELS[role]}</Text>
+      </View>
+
+      <View style={styles.roleButtons}>
+        {ROLE_BUTTONS.map(({ role: r, label }) => (
+          <TouchableOpacity
+            key={r}
+            style={[styles.roleButton, role === r && styles.roleButtonActive]}
+            onPress={() => handleRoleSwitch(r)}
+            accessibilityLabel={`切換角色：${label}`}
+          >
+            <Text style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {switchMsg !== '' && (
+        <Text style={styles.switchMsg}>{switchMsg}</Text>
+      )}
+
+      <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={handleCreateTestLog}>
         <Text style={styles.buttonText}>建立測試日誌</Text>
       </TouchableOpacity>
 
@@ -51,7 +105,7 @@ export default function SettingsScreen() {
           <Text style={styles.successText}>{insertMsg}</Text>
           {latestLog && (
             <Text style={styles.detailText}>
-              {`日期：${latestLog.record_date}　地點：${latestLog.location}　機號：${latestLog.machine_no}`}
+            {`日期：${latestLog.record_date}　地點：${latestLog.location}　機號：${latestLog.machine_no}`}
             </Text>
           )}
         </View>
@@ -88,12 +142,60 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginBottom: 8,
   },
+  roleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  roleLabel: {
+    fontSize: 16,
+    color: '#475569',
+  },
+  roleValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2563EB',
+  },
+  roleButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+  },
+  roleButtonActive: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  roleButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  roleButtonTextActive: {
+    color: '#2563EB',
+    fontWeight: '700',
+  },
+  switchMsg: {
+    fontSize: 14,
+    color: '#16A34A',
+    textAlign: 'center',
+  },
   button: {
     marginTop: 8,
     paddingVertical: 12,
     paddingHorizontal: 28,
     backgroundColor: '#2563EB',
     borderRadius: 8,
+  },
+  buttonSecondary: {
+    backgroundColor: '#64748B',
   },
   buttonText: {
     fontSize: 16,
