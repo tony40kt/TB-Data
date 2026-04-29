@@ -40,6 +40,11 @@ export default function AddScreen() {
       errors.push('記錄日期不可空白');
     } else if (!DATE_REGEX.test(record_date.trim())) {
       errors.push('記錄日期格式必須為 YYYY-MM-DD');
+    } else {
+      const d = new Date(record_date.trim());
+      if (isNaN(d.getTime())) {
+        errors.push('記錄日期不是有效日期');
+      }
     }
     if (!location.trim()) {
       errors.push('地點不可空白');
@@ -85,8 +90,8 @@ export default function AddScreen() {
       {/* 驗證錯誤訊息 */}
       {validationErrors.length > 0 && (
         <View style={styles.errorBox}>
-          {validationErrors.map((e) => (
-            <Text key={e} style={styles.errorBoxText}>
+          {validationErrors.map((e, index) => (
+            <Text key={index} style={styles.errorBoxText}>
               ⚠️ {e}
             </Text>
           ))}
