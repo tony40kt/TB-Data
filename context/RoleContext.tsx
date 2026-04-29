@@ -44,8 +44,14 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function setRole(newRole: Role) {
-    await AsyncStorage.setItem(ROLE_KEY, newRole);
+    const previousRole = role;
     setRoleState(newRole);
+    try {
+      await AsyncStorage.setItem(ROLE_KEY, newRole);
+    } catch {
+      // rollback on storage failure
+      setRoleState(previousRole);
+    }
   }
 
   return (
