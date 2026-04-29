@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const MACHINE_NO_REGEX = /^[A-Za-z0-9]+$/;
+const ALPHANUMERIC_DOT_REGEX = /^[A-Za-z0-9.]+$/;
 const FAULT_CODE_REGEX = /^\d+$/;
 
 function getTodayString(): string {
@@ -52,8 +52,17 @@ export default function AddScreen() {
     }
     if (!machine_no.trim()) {
       errors.push('機號不可空白');
-    } else if (!MACHINE_NO_REGEX.test(machine_no.trim())) {
-      errors.push('機號只能包含英文字母與數字');
+    } else if (!ALPHANUMERIC_DOT_REGEX.test(machine_no.trim())) {
+      errors.push('機號只能輸入英文/數字/句點(.)');
+    }
+    if (vfd_model.trim() && !ALPHANUMERIC_DOT_REGEX.test(vfd_model.trim())) {
+      errors.push('變頻型號只能輸入英文/數字/句點(.)');
+    }
+    if (vfd_software.trim() && !ALPHANUMERIC_DOT_REGEX.test(vfd_software.trim())) {
+      errors.push('變頻軟件只能輸入英文/數字/句點(.)');
+    }
+    if (motor_model.trim() && !ALPHANUMERIC_DOT_REGEX.test(motor_model.trim())) {
+      errors.push('摩打型號只能輸入英文/數字/句點(.)');
     }
     if (fault_code.trim() && !FAULT_CODE_REGEX.test(fault_code.trim())) {
       errors.push('故障碼只能輸入數字');
@@ -141,7 +150,7 @@ export default function AddScreen() {
           style={styles.input}
           value={machine_no}
           onChangeText={setMachineNo}
-          placeholder="英文字母與數字"
+          placeholder="英文/數字/句點(.)"
           placeholderTextColor="#94A3B8"
           autoCapitalize="characters"
         />
