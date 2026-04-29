@@ -60,8 +60,8 @@ export default function SearchScreen() {
     const input: SearchLogsInput = {
       keyword: keyword.trim() || undefined,
       location: location.trim() || undefined,
-      machine_no: machineNo.trim() || undefined,
-      fault_code: faultCode.trim() || undefined,
+      machineNo: machineNo.trim() || undefined,
+      faultCode: faultCode.trim() || undefined,
     };
     setSearchState('loading');
     try {
