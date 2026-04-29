@@ -15,6 +15,7 @@ type LoadState = 'loading' | 'ready' | 'not_found' | 'load_error';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MACHINE_NO_REGEX = /^[A-Za-z0-9]+$/;
+const FAULT_CODE_REGEX = /^\d+$/;
 
 export default function LogEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -84,6 +85,9 @@ export default function LogEditScreen() {
       errors.push('機號不可空白');
     } else if (!MACHINE_NO_REGEX.test(machine_no.trim())) {
       errors.push('機號只能包含英文字母與數字');
+    }
+    if (fault_code.trim() && !FAULT_CODE_REGEX.test(fault_code.trim())) {
+      errors.push('故障碼只能輸入數字');
     }
     return errors;
   }
@@ -317,7 +321,7 @@ export default function LogEditScreen() {
           onChangeText={setFaultCode}
           placeholder="（選填）"
           placeholderTextColor="#94A3B8"
-          autoCapitalize="characters"
+          keyboardType="number-pad"
         />
       </View>
 
