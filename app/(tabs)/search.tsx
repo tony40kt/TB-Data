@@ -6,12 +6,14 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Alert,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { searchLogs, LogRow, SearchLogsInput } from '../../db/logs';
 
 type SearchState = 'idle' | 'loading' | 'done' | 'error';
@@ -90,6 +92,27 @@ export default function SearchScreen() {
   function applyRecent(kw: string) {
     setKeyword(kw);
     setSearchState('idle');
+  }
+
+  async function handleCopyResults() {
+    if (results.length === 0) return;
+    try {
+      const escapeField = (val: string | number | null | undefined): string => {
+        if (val === null || val === undefined) return '';
+        return String(val).replace(/[\t\n\r]/g, ' ');
+      };
+      const header = ['record_date', 'location', 'machine_no', 'fault_code', 'remark', 'id'].join('\t');
+      const rows = results.map((r: LogRow) =>
+        [r.record_date, r.location, r.machine_no, r.fault_code, r.remark, r.id]
+          .map(escapeField)
+          .join('\t'),
+      );
+      const tsv = [header, ...rows].join('\n');
+      await Clipboard.setStringAsync(tsv);
+      Alert.alert('複製成功', `✅ 已複製 ${results.length} 筆`);
+    } catch {
+      Alert.alert('複製失敗', '❌ 無法複製到剪貼簿，請再試一次');
+    }
   }
 
   function renderResultItem({ item }: { item: LogRow }) {
@@ -238,9 +261,16 @@ export default function SearchScreen() {
 
         {searchState === 'done' && (
           <View style={styles.resultSection}>
-            <Text style={styles.resultCount}>
-              共 {results.length} 筆結果
-            </Text>
+            <View style={styles.resultHeader}>
+              <Text style={styles.resultCount}>
+                共 {results.length} 筆結果
+              </Text>
+              {results.length > 0 && (
+                <TouchableOpacity style={styles.copyBtn} onPress={handleCopyResults}>
+                  <Text style={styles.copyBtnText}>📋 複製結果</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             {results.length === 0 ? (
               <View style={styles.noResult}>
                 <Text style={styles.noResultIcon}>😶</Text>
@@ -397,10 +427,28 @@ const styles = StyleSheet.create({
   resultSection: {
     gap: 10,
   },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   resultCount: {
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
+  },
+  copyBtn: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  copyBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563EB',
   },
   noResult: {
     alignItems: 'center',
