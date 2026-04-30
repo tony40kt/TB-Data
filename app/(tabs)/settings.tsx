@@ -104,22 +104,20 @@ export default function SettingsScreen() {
         <Text style={styles.roleValue}>{ROLE_LABELS[role]}</Text>
       </View>
 
-      {DEV_MODE && (
-        <View style={styles.roleButtons}>
-          {ROLE_BUTTONS.map(({ role: r, label }) => (
-            <TouchableOpacity
-              key={r}
-              style={[styles.roleButton, role === r && styles.roleButtonActive]}
-              onPress={() => handleRoleSwitch(r)}
-              accessibilityLabel={`切換角色：${label}`}
-            >
-              <Text style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+      <View style={styles.roleButtons}>
+        {ROLE_BUTTONS.map(({ role: r, label }) => (
+          <TouchableOpacity
+            key={r}
+            style={[styles.roleButton, role === r && styles.roleButtonActive]}
+            onPress={() => handleRoleSwitch(r)}
+            accessibilityLabel={`切換角色：${label}`}
+          >
+            <Text style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {switchMsg !== '' && (
         <Text style={styles.switchMsg}>{switchMsg}</Text>
