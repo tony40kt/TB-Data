@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'rea
 import Constants from 'expo-constants';
 import { insertLog, getLatestLog, LogRow } from '../../db/logs';
 import { useRole, Role } from '../../context/RoleContext';
+import { useAuth } from '../../context/AuthContext';
+import { DEV_MODE } from '../../constants/devConfig';
 
 type InsertStatus = 'idle' | 'success' | 'failure';
 
@@ -28,6 +30,7 @@ function getRoleHint(r: Role): string {
 
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
+  const { currentEmail, isAuthLoading, signIn, signOut } = useAuth();
   const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
@@ -65,7 +68,7 @@ export default function SettingsScreen() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isAuthLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
@@ -80,25 +83,43 @@ export default function SettingsScreen() {
       <Text style={styles.title}>設定</Text>
       <Text style={styles.version}>版本：{version}</Text>
 
+      {/* 登入狀態區塊 */}
+      <View style={styles.authSection}>
+        <Text style={styles.authStatus}>
+          {currentEmail ? `已登入：${currentEmail}` : '未登入'}
+        </Text>
+        {currentEmail ? (
+          <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={signOut}>
+            <Text style={styles.buttonText}>登出</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={signIn}>
+            <Text style={styles.buttonText}>🔑 使用 Gmail 登入</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <View style={styles.roleSection}>
         <Text style={styles.roleLabel}>目前角色：</Text>
         <Text style={styles.roleValue}>{ROLE_LABELS[role]}</Text>
       </View>
 
-      <View style={styles.roleButtons}>
-        {ROLE_BUTTONS.map(({ role: r, label }) => (
-          <TouchableOpacity
-            key={r}
-            style={[styles.roleButton, role === r && styles.roleButtonActive]}
-            onPress={() => handleRoleSwitch(r)}
-            accessibilityLabel={`切換角色：${label}`}
-          >
-            <Text style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {DEV_MODE && (
+        <View style={styles.roleButtons}>
+          {ROLE_BUTTONS.map(({ role: r, label }) => (
+            <TouchableOpacity
+              key={r}
+              style={[styles.roleButton, role === r && styles.roleButtonActive]}
+              onPress={() => handleRoleSwitch(r)}
+              accessibilityLabel={`切換角色：${label}`}
+            >
+              <Text style={[styles.roleButtonText, role === r && styles.roleButtonTextActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {switchMsg !== '' && (
         <Text style={styles.switchMsg}>{switchMsg}</Text>
@@ -151,6 +172,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94A3B8',
     marginBottom: 8,
+  },
+  authSection: {
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    width: '100%',
+  },
+  authStatus: {
+    fontSize: 15,
+    color: '#334155',
+    fontWeight: '500',
+    textAlign: 'center',
   },
   roleSection: {
     flexDirection: 'row',
@@ -211,6 +248,9 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: {
     backgroundColor: '#64748B',
+  },
+  buttonDanger: {
+    backgroundColor: '#DC2626',
   },
   buttonText: {
     fontSize: 16,
