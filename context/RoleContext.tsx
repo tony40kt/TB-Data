@@ -35,8 +35,8 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
           setRoleState(stored);
         }
       })
-      .catch(() => {
-        // fallback to default on error
+      .catch((e) => {
+        console.warn('[RoleContext] AsyncStorage.getItem failed:', e);
       })
       .finally(() => {
         setIsLoading(false);
@@ -44,13 +44,11 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function setRole(newRole: Role) {
-    const previousRole = role;
     setRoleState(newRole);
     try {
       await AsyncStorage.setItem(ROLE_KEY, newRole);
-    } catch {
-      // rollback on storage failure
-      setRoleState(previousRole);
+    } catch (e) {
+      console.warn('[RoleContext] AsyncStorage.setItem failed - role change will not persist across app restarts:', e);
     }
   }
 
