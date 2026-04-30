@@ -19,7 +19,7 @@ import {
 
 export type LiftValue = string | null;
 
-/** 固定內建選項（Phase 2） */
+/** 固定內建選項（Phase 2）。Phase 3+ 可改為從 props 傳入或後台管理。 */
 export const LIFT_OPTIONS: { label: string; value: LiftValue }[] = [
   { label: '（不選擇）', value: null },
   { label: 'test-a', value: 'test-a' },
