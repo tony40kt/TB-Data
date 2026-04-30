@@ -107,14 +107,14 @@
 
 ### 4.1 開發模式定義
 
-建議直接使用 React Native 內建的 `__DEV__` 全域變數（在開發模式下為 `true`，正式 production build 自動為 `false`），或在常數設定檔中以此為基礎定義：
+Phase 3 使用 React Native 內建的 `__DEV__` 全域變數作為**唯一開關**：
 
 ```ts
 // constants/devConfig.ts
 export const DEV_MODE = __DEV__; // 開發模式自動為 true；正式 build 自動為 false
 ```
 
-> **說明**：使用 `__DEV__` 可避免手動改回 `false` 的風險，確保正式上架的 production build 不會顯示開發專用 UI。若需更細緻控制（例如 staging 環境），可改為讀取環境變數（`process.env.EXPO_PUBLIC_DEV_MODE`）。
+> **說明**：`__DEV__` 在 `expo start`（開發模式）下為 `true`，正式 production build（`eas build --profile production`）自動為 `false`，不需手動改回。Phase 3 不使用 `EXPO_PUBLIC_DEV_MODE` 或其他環境變數，避免實作者混淆。
 
 ### 4.2 升權按鈕（設定頁）
 
