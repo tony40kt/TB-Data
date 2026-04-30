@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getLogById, updateLog, UpdateLogInput } from '../../../db/logs';
 import { isValidDateYYYYMMDD } from '../../../utils/validation';
 import { useRole } from '../../../context/RoleContext';
+import { LiftDropdown, LiftValue } from '../../../components/LiftDropdown';
 
 type LoadState = 'loading' | 'ready' | 'not_found' | 'load_error';
 
@@ -32,8 +33,8 @@ export default function LogEditScreen() {
   const [record_date, setRecordDate] = useState('');
   const [location, setLocation] = useState('');
   const [machine_no, setMachineNo] = useState('');
-  const [lift_system, setLiftSystem] = useState('');
-  const [lift_software, setLiftSoftware] = useState('');
+  const [lift_system, setLiftSystem] = useState<LiftValue>(null);
+  const [lift_software, setLiftSoftware] = useState<LiftValue>(null);
   const [vfd_model, setVfdModel] = useState('');
   const [vfd_software, setVfdSoftware] = useState('');
   const [motor_model, setMotorModel] = useState('');
@@ -59,8 +60,8 @@ export default function LogEditScreen() {
         setRecordDate(row.record_date ?? '');
         setLocation(row.location ?? '');
         setMachineNo(row.machine_no ?? '');
-        setLiftSystem(row.lift_system ?? '');
-        setLiftSoftware(row.lift_software ?? '');
+        setLiftSystem(row.lift_system ?? null);
+        setLiftSoftware(row.lift_software ?? null);
         setVfdModel(row.vfd_model ?? '');
         setVfdSoftware(row.vfd_software ?? '');
         setMotorModel(row.motor_model ?? '');
@@ -133,8 +134,8 @@ export default function LogEditScreen() {
       record_date: record_date.trim(),
       location: location.trim(),
       machine_no: machine_no.trim(),
-      lift_system: lift_system.trim() || undefined,
-      lift_software: lift_software.trim() || undefined,
+      lift_system: lift_system ?? undefined,
+      lift_software: lift_software ?? undefined,
       vfd_model: vfd_model.trim() || undefined,
       vfd_software: vfd_software.trim() || undefined,
       motor_model: motor_model.trim() || undefined,
@@ -275,23 +276,19 @@ export default function LogEditScreen() {
 
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>升降機系統</Text>
-        <TextInput
-          style={styles.input}
+        <LiftDropdown
           value={lift_system}
-          onChangeText={setLiftSystem}
-          placeholder="（選填）"
-          placeholderTextColor="#94A3B8"
+          onChange={setLiftSystem}
+          disabled={isGuest}
         />
       </View>
 
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>升降機軟件</Text>
-        <TextInput
-          style={styles.input}
+        <LiftDropdown
           value={lift_software}
-          onChangeText={setLiftSoftware}
-          placeholder="（選填）"
-          placeholderTextColor="#94A3B8"
+          onChange={setLiftSoftware}
+          disabled={isGuest}
         />
       </View>
 

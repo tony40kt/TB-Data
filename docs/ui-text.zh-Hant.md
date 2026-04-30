@@ -82,6 +82,9 @@
 | `perm.guest.no_delete` | 詳情頁 — 訪客無法刪除記錄 | 🔒 訪客不可刪除記錄 | #33 |
 | `perm.user.no_export` | 搜尋頁 — 一般使用者無法匯出 | 🔒 一般使用者不可匯出資料 | #33 |
 | `perm.guest.no_export` | 搜尋頁 — 訪客無法匯出 | 🔒 訪客不可匯出資料 | #33 |
+| `dropdown.no_selection` | 升降機系統 / 升降機軟件下拉 — 第一個選項文字 | （不選擇） | #30 |
+| `msg.add.success.title` | 新增頁儲存成功 Alert 標題 | ✅ 已儲存 | #30 |
+| `msg.add.success.message` | 新增頁儲存成功 Alert 內文 | 日誌已成功新增。 | #30 |
 
 ---
 
@@ -92,8 +95,8 @@
 | `record_date` | 記錄日期 | YYYY-MM-DD | ✅ |
 | `location` | 地點 | 工作地點 | ✅ |
 | `machine_no` | 機號 | 英文/數字/句點(.) | ✅ |
-| `lift_system` | 升降機系統 | （選填） | — |
-| `lift_software` | 升降機軟件 | （選填） | — |
+| `lift_system` | 升降機系統 | （下拉選單） | — |
+| `lift_software` | 升降機軟件 | （下拉選單） | — |
 | `vfd_model` | 變頻型號 | （選填） | — |
 | `vfd_software` | 變頻軟件 | （選填） | — |
 | `motor_model` | 摩打型號 | （選填） | — |

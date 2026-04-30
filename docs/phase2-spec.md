@@ -1,6 +1,7 @@
 # Phase 2 規格文件：下拉選單
 
 > **用途**：本文件為 Phase 2「升降機系統／升降機軟件」下拉選單的單一規格依據，後續 add / edit 頁的下拉 UI 實作以此為準。
+> **狀態**：✅ 已實作（Issue #30）— `components/LiftDropdown.tsx`、`app/(tabs)/add.tsx`、`app/logs/[id]/edit.tsx`
 
 ---
 
@@ -85,4 +86,4 @@ input.lift_software ?? null, // 未選擇時傳入 null
 
 ---
 
-*此文件對應 Issue #30，作為後續實作下拉 UI 的依據。*
+*此文件對應 Issue #30，作為後續實作下拉 UI 的依據。下拉 UI 已於 Phase 2 實作完成，元件位於 `components/LiftDropdown.tsx`。*

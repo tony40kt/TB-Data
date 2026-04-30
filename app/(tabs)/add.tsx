@@ -8,8 +8,11 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { isValidDateYYYYMMDD } from '../../utils/validation';
+import { insertLog } from '../../db/logs';
 import { useRole } from '../../context/RoleContext';
+import { LiftDropdown, LiftValue } from '../../components/LiftDropdown';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const ALPHANUMERIC_DOT_REGEX = /^[A-Za-z0-9.]+$/;
@@ -26,12 +29,13 @@ function getTodayString(): string {
 export default function AddScreen() {
   const { role } = useRole();
   const isGuest = role === 'guest';
+  const router = useRouter();
 
   const [record_date, setRecordDate] = useState(getTodayString());
   const [location, setLocation] = useState('');
   const [machine_no, setMachineNo] = useState('');
-  const [lift_system, setLiftSystem] = useState('');
-  const [lift_software, setLiftSoftware] = useState('');
+  const [lift_system, setLiftSystem] = useState<LiftValue>(null);
+  const [lift_software, setLiftSoftware] = useState<LiftValue>(null);
   const [vfd_model, setVfdModel] = useState('');
   const [vfd_software, setVfdSoftware] = useState('');
   const [motor_model, setMotorModel] = useState('');
@@ -39,6 +43,8 @@ export default function AddScreen() {
   const [remark, setRemark] = useState('');
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   function validate(): string[] {
     const errors: string[] = [];
@@ -79,21 +85,52 @@ export default function AddScreen() {
       return;
     }
     setValidationErrors([]);
-    Alert.alert('驗證通過', '尚未接 DB，已通過驗證。');
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    try {
+      insertLog({
+        record_date: record_date.trim(),
+        location: location.trim(),
+        machine_no: machine_no.trim(),
+        lift_system: lift_system ?? undefined,
+        lift_software: lift_software ?? undefined,
+        vfd_model: vfd_model.trim() || undefined,
+        vfd_software: vfd_software.trim() || undefined,
+        motor_model: motor_model.trim() || undefined,
+        fault_code: fault_code.trim() || undefined,
+        remark: remark.trim() || undefined,
+      });
+      setSubmitSuccess(true);
+      Alert.alert('✅ 已儲存', '日誌已成功新增。', [
+        {
+          text: '確定',
+          onPress: () => {
+            handleReset();
+            router.replace('/logs');
+          },
+        },
+      ]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSubmitError(msg);
+    }
   }
 
   function handleReset() {
     setRecordDate(getTodayString());
     setLocation('');
     setMachineNo('');
-    setLiftSystem('');
-    setLiftSoftware('');
+    setLiftSystem(null);
+    setLiftSoftware(null);
     setVfdModel('');
     setVfdSoftware('');
     setMotorModel('');
     setFaultCode('');
     setRemark('');
     setValidationErrors([]);
+    setSubmitError('');
+    setSubmitSuccess(false);
   }
 
   return (
@@ -110,6 +147,13 @@ export default function AddScreen() {
               ⚠️ {e}
             </Text>
           ))}
+        </View>
+      )}
+
+      {/* 儲存失敗訊息 */}
+      {submitError !== '' && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorBoxText}>❌ 新增失敗：{submitError}</Text>
         </View>
       )}
 
@@ -163,23 +207,19 @@ export default function AddScreen() {
 
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>升降機系統</Text>
-        <TextInput
-          style={styles.input}
+        <LiftDropdown
           value={lift_system}
-          onChangeText={setLiftSystem}
-          placeholder="（選填）"
-          placeholderTextColor="#94A3B8"
+          onChange={setLiftSystem}
+          disabled={isGuest}
         />
       </View>
 
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>升降機軟件</Text>
-        <TextInput
-          style={styles.input}
+        <LiftDropdown
           value={lift_software}
-          onChangeText={setLiftSoftware}
-          placeholder="（選填）"
-          placeholderTextColor="#94A3B8"
+          onChange={setLiftSoftware}
+          disabled={isGuest}
         />
       </View>
 
