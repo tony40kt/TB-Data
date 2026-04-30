@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { searchLogs, LogRow, SearchLogsInput } from '../../db/logs';
+import { useRole } from '../../context/RoleContext';
 
 type SearchState = 'idle' | 'loading' | 'done' | 'error';
 
@@ -23,6 +24,8 @@ const MAX_REMARK_PREVIEW = 30;
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { role } = useRole();
+  const canExport = role === 'admin';
 
   // 搜尋條件
   const [keyword, setKeyword] = useState('');
@@ -266,11 +269,20 @@ export default function SearchScreen() {
                 共 {results.length} 筆結果
               </Text>
               {results.length > 0 && (
-                <TouchableOpacity style={styles.copyBtn} onPress={handleCopyResults}>
-                  <Text style={styles.copyBtnText}>📋 複製結果</Text>
+                <TouchableOpacity
+                  style={[styles.copyBtn, !canExport && styles.copyBtnDisabled]}
+                  onPress={handleCopyResults}
+                  disabled={!canExport}
+                >
+                  <Text style={[styles.copyBtnText, !canExport && styles.copyBtnTextDisabled]}>📋 複製結果</Text>
                 </TouchableOpacity>
               )}
             </View>
+            {results.length > 0 && !canExport && (
+              <Text style={styles.permissionHint}>
+                🔒 {role === 'user' ? '一般使用者不可匯出資料' : '訪客不可匯出資料'}
+              </Text>
+            )}
             {results.length === 0 ? (
               <View style={styles.noResult}>
                 <Text style={styles.noResultIcon}>😶</Text>
@@ -445,10 +457,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BFDBFE',
   },
+  copyBtnDisabled: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#CBD5E1',
+  },
   copyBtnText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#2563EB',
+  },
+  copyBtnTextDisabled: {
+    color: '#94A3B8',
+  },
+  permissionHint: {
+    fontSize: 13,
+    color: '#64748B',
   },
   noResult: {
     alignItems: 'center',
