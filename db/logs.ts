@@ -18,10 +18,10 @@ export interface NewLogInput {
   location: string;
   /** 機號，僅英文字母與數字（必填） */
   machine_no: string;
-  /** 升降機系統（選填） */
-  lift_system?: string;
-  /** 升降機軟件（選填） */
-  lift_software?: string;
+  /** 升降機系統（選填）；傳入 null 明確寫入 DB NULL */
+  lift_system?: string | null;
+  /** 升降機軟件（選填）；傳入 null 明確寫入 DB NULL */
+  lift_software?: string | null;
   /** 變頻型號（選填） */
   vfd_model?: string;
   /** 變頻軟件（選填） */
@@ -124,10 +124,10 @@ export interface UpdateLogInput {
   location: string;
   /** 機號，僅英文字母與數字（必填） */
   machine_no: string;
-  /** 升降機系統（選填） */
-  lift_system?: string;
-  /** 升降機軟件（選填） */
-  lift_software?: string;
+  /** 升降機系統（選填）；傳入 null 明確寫入 DB NULL */
+  lift_system?: string | null;
+  /** 升降機軟件（選填）；傳入 null 明確寫入 DB NULL */
+  lift_software?: string | null;
   /** 變頻型號（選填） */
   vfd_model?: string;
   /** 變頻軟件（選填） */
