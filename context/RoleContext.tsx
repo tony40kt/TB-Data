@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Role = 'admin' | 'user' | 'guest';
@@ -71,7 +71,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   // - email === null  → guest (roleMap/knownEmails are preserved)
   // - email in roleMap with a valid role → use that stored role
   // - email not in roleMap or invalid  → default to 'user', persist, add to knownEmails
-  async function applyEmail(email: string | null) {
+  const applyEmail = useCallback(async (email: string | null) => {
     currentEmailRef.current = email;
 
     if (email === null) {
@@ -80,7 +80,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     }
 
     const map = { ...roleMapRef.current };
-    const emails = [...knownEmailsRef.current];
+    const emails = knownEmailsRef.current;
     let mapChanged = false;
     let emailsChanged = false;
 
@@ -90,7 +90,6 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!emails.includes(email)) {
-      emails.push(email);
       emailsChanged = true;
     }
 
@@ -107,15 +106,16 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (emailsChanged) {
-      knownEmailsRef.current = emails;
-      setKnownEmails(emails);
+      const newEmails = [...emails, email];
+      knownEmailsRef.current = newEmails;
+      setKnownEmails(newEmails);
       try {
-        await AsyncStorage.setItem(KNOWN_EMAILS_KEY, JSON.stringify(emails));
+        await AsyncStorage.setItem(KNOWN_EMAILS_KEY, JSON.stringify(newEmails));
       } catch (e) {
         console.warn('[RoleContext] Failed to save knownEmails:', e);
       }
     }
-  }
+  }, []);
 
   // setRole — updates the live role state and, if a user is logged in,
   // persists the new role to roleMap[currentEmail].

@@ -80,8 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => {
         setIsAuthLoading(false);
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [applyEmail]);
 
   // Gmail OAuth 回應處理
   useEffect(() => {
