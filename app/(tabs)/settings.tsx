@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
 import { insertLog, getLatestLog, LogRow } from '../../db/logs';
 import { useRole, Role } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
-import { DEV_MODE } from '../../constants/devConfig';
 
 type InsertStatus = 'idle' | 'success' | 'failure';
 
@@ -30,13 +29,11 @@ function getRoleHint(r: Role): string {
 
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
-  const { currentEmail, isAuthLoading, setCurrentEmail } = useAuth();
+  const { currentEmail } = useAuth();
   const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
   const [latestLog, setLatestLog] = useState<LogRow | null>(null);
-  const [devEmailInput, setDevEmailInput] = useState('');
-  const [devMsg, setDevMsg] = useState('');
 
   const version = Constants.expoConfig?.version ?? '—';
 
@@ -44,27 +41,6 @@ export default function SettingsScreen() {
     if (newRole === role) return;
     await setRole(newRole);
     setSwitchMsg(`✅ 已切換為：${ROLE_LABELS[newRole]}`);
-  }
-
-  async function handleLogout() {
-    await setCurrentEmail(null);
-    setSwitchMsg('');
-    setDevMsg('');
-  }
-
-  async function handleDevLogin() {
-    const email = devEmailInput.trim();
-    if (!email || !email.includes('@')) return;
-    await setCurrentEmail(email);
-    setDevEmailInput('');
-    setDevMsg('');
-    setSwitchMsg('');
-  }
-
-  async function handleElevateAdmin() {
-    if (!currentEmail) return;
-    await setRole('admin');
-    setDevMsg(`✅ 已將 ${currentEmail} 升級為管理員。`);
   }
 
   function handleCreateTestLog() {
@@ -91,7 +67,7 @@ export default function SettingsScreen() {
     }
   }
 
-  if (isLoading || isAuthLoading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
@@ -106,17 +82,12 @@ export default function SettingsScreen() {
       <Text style={styles.title}>設定</Text>
       <Text style={styles.version}>版本：{version}</Text>
 
-      {/* Auth status */}
+      {/* Auth status — read-only display; login/logout UI belongs to #36 */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>登入狀態</Text>
         <Text style={styles.authStatus}>
           {currentEmail ? `已登入：${currentEmail}` : '未登入'}
         </Text>
-        {currentEmail && (
-          <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
-            <Text style={styles.buttonText}>登出</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Role display */}
@@ -145,36 +116,6 @@ export default function SettingsScreen() {
       )}
 
       <Text style={styles.roleHint}>{getRoleHint(role)}</Text>
-
-      {/* Dev tools */}
-      {DEV_MODE && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>開發工具</Text>
-          {!currentEmail && (
-            <View style={styles.devLoginRow}>
-              <TextInput
-                style={styles.devEmailInput}
-                placeholder="輸入 Email 模擬登入"
-                value={devEmailInput}
-                onChangeText={setDevEmailInput}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <TouchableOpacity style={[styles.button, styles.buttonSmall]} onPress={handleDevLogin}>
-                <Text style={styles.buttonText}>模擬登入</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          {currentEmail && role !== 'admin' && (
-            <TouchableOpacity style={[styles.button, styles.buttonDev]} onPress={handleElevateAdmin}>
-              <Text style={styles.buttonText}>🛠️ 升級為管理員（僅開發模式）</Text>
-            </TouchableOpacity>
-          )}
-          {devMsg !== '' && (
-            <Text style={styles.switchMsg}>{devMsg}</Text>
-          )}
-        </View>
-      )}
 
       <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={handleCreateTestLog}>
         <Text style={styles.buttonText}>建立測試日誌</Text>
@@ -292,22 +233,6 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
   },
-  devLoginRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  devEmailInput: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    fontSize: 13,
-    backgroundColor: '#FFFFFF',
-    color: '#1E293B',
-  },
   button: {
     marginTop: 8,
     paddingVertical: 12,
@@ -315,20 +240,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563EB',
     borderRadius: 8,
   },
-  buttonSmall: {
-    marginTop: 0,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
   buttonSecondary: {
     backgroundColor: '#64748B',
-  },
-  buttonDanger: {
-    backgroundColor: '#DC2626',
-    marginTop: 0,
-  },
-  buttonDev: {
-    backgroundColor: '#7C3AED',
   },
   buttonText: {
     fontSize: 16,

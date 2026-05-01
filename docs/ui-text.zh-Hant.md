@@ -87,13 +87,6 @@
 | `msg.add.success.message` | 新增頁儲存成功 Alert 內文 | 日誌已成功新增。 | #30 |
 | `auth.status.logged_out` | 設定頁 — 未登入狀態 | 未登入 | #37 |
 | `auth.status.logged_in` | 設定頁 — 已登入，顯示 email | 已登入：{email} | #37 |
-| `btn.login` | 設定頁 — 登入按鈕 | 🔑 使用 Gmail 登入 | #37 |
-| `btn.logout` | 設定頁 — 登出按鈕 | 登出 | #37 |
-| `auth.role.default_user` | 登入成功後的角色提示 | ✅ 登入成功，目前角色：一般使用者 | #37 |
-| `auth.role.restored` | 登入成功且沿用舊角色時的提示 | ✅ 登入成功，沿用角色：{roleName} | #37 |
-| `btn.dev.elevate_admin` | 設定頁開發工具區塊 | 🛠️ 升級為管理員（僅開發模式） | #37 |
-| `auth.dev.elevated` | 升權成功提示 | ✅ 已將 {email} 升級為管理員。 | #37 |
-| `auth.section.dev_tools` | 設定頁開發工具區塊標題 | 開發工具 | #37 |
 
 ---
 
