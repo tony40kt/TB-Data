@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Role = 'admin' | 'user' | 'guest';
 
-const CURRENT_EMAIL_KEY = 'tbdata.currentEmail';
 const ROLE_MAP_KEY = 'tbdata.roleMap';
 const KNOWN_EMAILS_KEY = 'tbdata.knownEmails';
 const DEFAULT_ROLE: Role = 'guest';
@@ -19,6 +18,7 @@ function isValidRole(value: string): value is Role {
 type RoleContextValue = {
   role: Role;
   setRole: (role: Role) => Promise<void>;
+  applyEmail: (email: string | null) => Promise<void>;
   roleMap: RoleMap;
   knownEmails: string[];
   isLoading: boolean;
@@ -27,6 +27,7 @@ type RoleContextValue = {
 const RoleContext = createContext<RoleContextValue>({
   role: DEFAULT_ROLE,
   setRole: async () => {},
+  applyEmail: async () => {},
   roleMap: {},
   knownEmails: [],
   isLoading: true,
@@ -38,76 +39,83 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const [knownEmails, setKnownEmails] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Ref to track the current email so setRole() can always update the right entry.
+  // Refs so callbacks always see the latest values without stale closures.
   const currentEmailRef = useRef<string | null>(null);
   const roleMapRef = useRef<RoleMap>({});
   const knownEmailsRef = useRef<string[]>([]);
 
-  // On mount: read currentEmail + roleMap + knownEmails from AsyncStorage,
-  // then apply the role decision defined in auth-spec.md §3 / §5.
+  // Load roleMap + knownEmails from AsyncStorage once on mount.
   useEffect(() => {
-    async function loadAndApply() {
+    async function loadStorage() {
       try {
-        const [emailStored, mapJson, emailsJson] = await Promise.all([
-          AsyncStorage.getItem(CURRENT_EMAIL_KEY),
+        const [mapJson, emailsJson] = await Promise.all([
           AsyncStorage.getItem(ROLE_MAP_KEY),
           AsyncStorage.getItem(KNOWN_EMAILS_KEY),
         ]);
-
-        const email: string | null = emailStored ?? null;
         const map: RoleMap = mapJson ? (JSON.parse(mapJson) as RoleMap) : {};
         const emails: string[] = emailsJson ? (JSON.parse(emailsJson) as string[]) : [];
-
-        currentEmailRef.current = email;
         roleMapRef.current = map;
         knownEmailsRef.current = emails;
         setRoleMap(map);
         setKnownEmails(emails);
-
-        if (email === null) {
-          setRoleState('guest');
-          return;
-        }
-
-        let mapChanged = false;
-        let emailsChanged = false;
-
-        if (!isValidRole(map[email])) {
-          // New email — default to 'user'
-          map[email] = 'user';
-          mapChanged = true;
-        }
-
-        if (!emails.includes(email)) {
-          emails.push(email);
-          emailsChanged = true;
-        }
-
-        setRoleState(map[email]);
-
-        if (mapChanged) {
-          roleMapRef.current = map;
-          setRoleMap(map);
-          AsyncStorage.setItem(ROLE_MAP_KEY, JSON.stringify(map)).catch((e) => {
-            console.warn('[RoleContext] Failed to save roleMap:', e);
-          });
-        }
-
-        if (emailsChanged) {
-          knownEmailsRef.current = emails;
-          setKnownEmails(emails);
-          AsyncStorage.setItem(KNOWN_EMAILS_KEY, JSON.stringify(emails)).catch((e) => {
-            console.warn('[RoleContext] Failed to save knownEmails:', e);
-          });
-        }
       } catch (e) {
-        console.warn('[RoleContext] Failed to load storage:', e);
+        console.warn('[RoleContext] Failed to load roleMap/knownEmails:', e);
       } finally {
         setIsLoading(false);
       }
     }
-    loadAndApply();
+    loadStorage();
   }, []);
+
+  // Called by AuthContext when the logged-in email changes (login / logout / cold start).
+  // - email === null  → guest (roleMap/knownEmails are preserved)
+  // - email in roleMap with a valid role → use that stored role
+  // - email not in roleMap or invalid  → default to 'user', persist, add to knownEmails
+  async function applyEmail(email: string | null) {
+    currentEmailRef.current = email;
+
+    if (email === null) {
+      setRoleState('guest');
+      return;
+    }
+
+    const map = { ...roleMapRef.current };
+    const emails = [...knownEmailsRef.current];
+    let mapChanged = false;
+    let emailsChanged = false;
+
+    if (!isValidRole(map[email])) {
+      map[email] = 'user';
+      mapChanged = true;
+    }
+
+    if (!emails.includes(email)) {
+      emails.push(email);
+      emailsChanged = true;
+    }
+
+    setRoleState(map[email]);
+
+    if (mapChanged) {
+      roleMapRef.current = map;
+      setRoleMap(map);
+      try {
+        await AsyncStorage.setItem(ROLE_MAP_KEY, JSON.stringify(map));
+      } catch (e) {
+        console.warn('[RoleContext] Failed to save roleMap:', e);
+      }
+    }
+
+    if (emailsChanged) {
+      knownEmailsRef.current = emails;
+      setKnownEmails(emails);
+      try {
+        await AsyncStorage.setItem(KNOWN_EMAILS_KEY, JSON.stringify(emails));
+      } catch (e) {
+        console.warn('[RoleContext] Failed to save knownEmails:', e);
+      }
+    }
+  }
 
   // setRole — updates the live role state and, if a user is logged in,
   // persists the new role to roleMap[currentEmail].
@@ -128,7 +136,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <RoleContext.Provider value={{ role, setRole, roleMap, knownEmails, isLoading }}>
+    <RoleContext.Provider value={{ role, setRole, applyEmail, roleMap, knownEmails, isLoading }}>
       {children}
     </RoleContext.Provider>
   );

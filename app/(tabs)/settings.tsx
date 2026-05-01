@@ -29,7 +29,7 @@ function getRoleHint(r: Role): string {
 
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
-  const { currentEmail } = useAuth();
+  const { currentEmail, isAuthLoading } = useAuth();
   const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isAuthLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />

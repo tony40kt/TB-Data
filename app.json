@@ -28,7 +28,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-web-browser"
     ],
     "scheme": "salary-records",
     "experiments": {

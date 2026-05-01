@@ -85,8 +85,12 @@
 | `dropdown.no_selection` | 升降機系統 / 升降機軟件下拉 — 第一個選項文字 | （不選擇） | #30 |
 | `msg.add.success.title` | 新增頁儲存成功 Alert 標題 | ✅ 已儲存 | #30 |
 | `msg.add.success.message` | 新增頁儲存成功 Alert 內文 | 日誌已成功新增。 | #30 |
-| `auth.status.logged_out` | 設定頁 — 未登入狀態 | 未登入 | #37 |
-| `auth.status.logged_in` | 設定頁 — 已登入，顯示 email | 已登入：{email} | #37 |
+| `auth.status.logged_out` | 設定頁 — 未登入狀態 | 未登入 | #36 |
+| `auth.status.logged_in` | 設定頁 — 已登入，顯示 email | 已登入：{email} | #36 |
+| `btn.login` | 設定頁 — 登入按鈕 | 🔑 使用 Gmail 登入 | #36 |
+| `btn.logout` | 設定頁 — 登出按鈕 | 登出 | #36 |
+| `auth.role.default_user` | 登入成功後的角色提示 | ✅ 登入成功，目前角色：一般使用者 | #36 |
+| `auth.role.restored` | 登入成功且沿用舊角色時的提示 | ✅ 登入成功，沿用角色：{roleName} | #36 |
 
 ---
 

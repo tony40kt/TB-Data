@@ -1,11 +1,11 @@
 import { Stack } from 'expo-router';
-import { AuthProvider } from '../context/AuthContext';
 import { RoleProvider } from '../context/RoleContext';
+import { AuthProvider } from '../context/AuthContext';
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
     <RoleProvider>
+    <AuthProvider>
     <Stack>
       <Stack.Screen
         name="index"
@@ -41,7 +41,7 @@ export default function RootLayout() {
         }}
       />
     </Stack>
-    </RoleProvider>
     </AuthProvider>
+    </RoleProvider>
   );
 }
