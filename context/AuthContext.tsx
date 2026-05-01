@@ -31,7 +31,7 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setRole } = useRole();
+  const { applyEmail } = useRole();
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
@@ -40,15 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     webClientId: GOOGLE_WEB_CLIENT_ID,
   });
 
+  // Persist the email and apply the correct role from roleMap (#37 spec).
   const persistEmail = useCallback(async (email: string) => {
     try {
       await AsyncStorage.setItem(CURRENT_EMAIL_KEY, email);
       setCurrentEmail(email);
-      await setRole('user');
+      await applyEmail(email);
     } catch (e) {
       console.warn('[AuthContext] AsyncStorage.setItem failed:', e);
     }
-  }, [setRole]);
+  }, [applyEmail]);
 
   const fetchGoogleUser = useCallback(async (accessToken: string) => {
     try {
@@ -66,27 +67,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [persistEmail]);
 
-  // App 啟動時讀取已存的 currentEmail
+  // App 啟動時讀取已存的 currentEmail，並透過 applyEmail 從 roleMap 套用正確角色。
   useEffect(() => {
     AsyncStorage.getItem(CURRENT_EMAIL_KEY)
       .then(async (stored) => {
-        if (stored) {
-          setCurrentEmail(stored);
-          await setRole('user');
-        } else {
-          setCurrentEmail(null);
-          await setRole('guest');
-        }
+        setCurrentEmail(stored ?? null);
+        await applyEmail(stored ?? null);
       })
       .catch((e) => {
-        console.warn('[AuthContext] AsyncStorage.getItem failed:', e);
+        console.warn('[AuthContext] Failed to read currentEmail:', e);
       })
       .finally(() => {
         setIsAuthLoading(false);
       });
-  }, [setRole]);
+  }, [applyEmail]);
 
-  // 處理 OAuth 回傳結果
+  // Gmail OAuth 回應處理
   useEffect(() => {
     if (response?.type === 'success') {
       const { authentication } = response;
@@ -97,10 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [response, fetchGoogleUser]);
 
   async function signIn() {
-    if (!request) {
-      console.warn('[AuthContext] OAuth 請求尚未就緒，請確認 Google Client ID 已設定。');
-      return;
-    }
     await promptAsync();
   }
 
@@ -108,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.removeItem(CURRENT_EMAIL_KEY);
       setCurrentEmail(null);
-      await setRole('guest');
+      await applyEmail(null);
     } catch (e) {
       console.warn('[AuthContext] signOut failed:', e);
     }

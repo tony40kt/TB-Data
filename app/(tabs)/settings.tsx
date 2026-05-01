@@ -4,7 +4,6 @@ import Constants from 'expo-constants';
 import { insertLog, getLatestLog, LogRow } from '../../db/logs';
 import { useRole, Role } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
-import { DEV_MODE } from '../../constants/devConfig';
 
 type InsertStatus = 'idle' | 'success' | 'failure';
 
@@ -30,7 +29,7 @@ function getRoleHint(r: Role): string {
 
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
-  const { currentEmail, isAuthLoading, signIn, signOut } = useAuth();
+  const { currentEmail, isAuthLoading } = useAuth();
   const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
@@ -83,22 +82,15 @@ export default function SettingsScreen() {
       <Text style={styles.title}>設定</Text>
       <Text style={styles.version}>版本：{version}</Text>
 
-      {/* 登入狀態區塊 */}
-      <View style={styles.authSection}>
+      {/* Auth status — read-only display; login/logout UI belongs to #36 */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>登入狀態</Text>
         <Text style={styles.authStatus}>
           {currentEmail ? `已登入：${currentEmail}` : '未登入'}
         </Text>
-        {currentEmail ? (
-          <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={signOut}>
-            <Text style={styles.buttonText}>登出</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={signIn}>
-            <Text style={styles.buttonText}>🔑 使用 Gmail 登入</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
+      {/* Role display */}
       <View style={styles.roleSection}>
         <Text style={styles.roleLabel}>目前角色：</Text>
         <Text style={styles.roleValue}>{ROLE_LABELS[role]}</Text>
@@ -171,21 +163,25 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginBottom: 8,
   },
-  authSection: {
+  section: {
+    width: '100%',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 4,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 10,
-    width: '100%',
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   authStatus: {
     fontSize: 15,
-    color: '#334155',
+    color: '#1E293B',
     fontWeight: '500',
-    textAlign: 'center',
   },
   roleSection: {
     flexDirection: 'row',
@@ -246,9 +242,6 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: {
     backgroundColor: '#64748B',
-  },
-  buttonDanger: {
-    backgroundColor: '#DC2626',
   },
   buttonText: {
     fontSize: 16,

@@ -91,9 +91,6 @@
 | `btn.logout` | 設定頁 — 登出按鈕 | 登出 | #36 |
 | `auth.role.default_user` | 登入成功後的角色提示 | ✅ 登入成功，目前角色：一般使用者 | #36 |
 | `auth.role.restored` | 登入成功且沿用舊角色時的提示 | ✅ 登入成功，沿用角色：{roleName} | #36 |
-| `btn.dev.elevate_admin` | 設定頁開發工具區塊 | 🛠️ 升級為管理員（僅開發模式） | #36 |
-| `auth.dev.elevated` | 升權成功提示 | ✅ 已將 {email} 升級為管理員。 | #36 |
-| `auth.section.dev_tools` | 設定頁開發工具區塊標題 | 開發工具 | #36 |
 
 ---
 
