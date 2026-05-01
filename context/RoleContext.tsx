@@ -140,6 +140,10 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   // setRoleForEmail — Admin can update any email's role in roleMap and persist it.
   // If the email is the currently logged-in user, the live role is also updated.
   async function setRoleForEmail(email: string, newRole: Role) {
+    if (role !== 'admin') {
+      console.warn('[RoleContext] setRoleForEmail forbidden: role=', role);
+      return;
+    }
     const newMap = { ...roleMapRef.current, [email]: newRole };
     roleMapRef.current = newMap;
     setRoleMap(newMap);
