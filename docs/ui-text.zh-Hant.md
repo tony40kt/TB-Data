@@ -91,6 +91,16 @@
 | `btn.logout` | 設定頁 — 登出按鈕 | 登出 | #36 |
 | `auth.role.default_user` | 登入成功後的角色提示 | ✅ 登入成功，目前角色：一般使用者 | #36 |
 | `auth.role.restored` | 登入成功且沿用舊角色時的提示 | ✅ 登入成功，沿用角色：{roleName} | #36 |
+| `admin.users.title` | 使用者角色管理頁 — 標題 | 使用者角色管理 | #38 |
+| `admin.users.subtitle` | 使用者角色管理頁 — 副標題 | 管理本機已登入過的帳號角色 | #38 |
+| `admin.users.empty` | 使用者角色管理頁 — 無帳號提示 | 目前尚無已登入帳號 | #38 |
+| `admin.users.empty_hint` | 使用者角色管理頁 — 無帳號提示補充 | 帳號登入後會自動出現在此清單 | #38 |
+| `admin.users.no_perm` | 非 admin 嘗試進入管理頁 | 僅限管理員存取 | #38 |
+| `admin.users.no_perm_hint` | 非 admin 嘗試進入管理頁補充說明 | 目前角色無權限進入此頁面 | #38 |
+| `btn.admin_users` | 設定頁 admin 專屬入口按鈕 | 👥 使用者角色管理 | #38 |
+| `btn.back_settings` | 管理頁返回設定 | 返回設定 | #38 |
+| `admin.users.saved` | 管理頁儲存成功提示 | ✅ 已儲存 | #38 |
+| `admin.users.save_fail` | 管理頁儲存失敗提示 | 儲存失敗 | #38 |
 
 ---
 

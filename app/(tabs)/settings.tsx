@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { insertLog, getLatestLog, LogRow } from '../../db/logs';
 import { useRole, Role } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
@@ -30,6 +31,7 @@ function getRoleHint(r: Role): string {
 export default function SettingsScreen() {
   const { role, setRole, isLoading } = useRole();
   const { currentEmail, isAuthLoading } = useAuth();
+  const router = useRouter();
   const [switchMsg, setSwitchMsg] = useState('');
   const [insertStatus, setInsertStatus] = useState<InsertStatus>('idle');
   const [insertMsg, setInsertMsg] = useState('');
@@ -116,6 +118,17 @@ export default function SettingsScreen() {
       )}
 
       <Text style={styles.roleHint}>{getRoleHint(role)}</Text>
+
+      {/* Admin-only: User Role Management entry */}
+      {role === 'admin' && (
+        <TouchableOpacity
+          style={styles.adminEntryButton}
+          onPress={() => router.push('/admin-users')}
+          accessibilityLabel="使用者角色管理"
+        >
+          <Text style={styles.adminEntryButtonText}>👥 使用者角色管理</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={handleCreateTestLog}>
         <Text style={styles.buttonText}>建立測試日誌</Text>
@@ -244,6 +257,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#64748B',
   },
   buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  adminEntryButton: {
+    marginTop: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    backgroundColor: '#1E40AF',
+    borderRadius: 8,
+  },
+  adminEntryButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',

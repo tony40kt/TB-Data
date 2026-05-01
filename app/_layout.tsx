@@ -40,6 +40,13 @@ export default function RootLayout() {
           headerBackTitle: '返回',
         }}
       />
+      <Stack.Screen
+        name="admin-users"
+        options={{
+          title: '使用者角色管理',
+          headerBackTitle: '返回',
+        }}
+      />
     </Stack>
     </AuthProvider>
     </RoleProvider>
