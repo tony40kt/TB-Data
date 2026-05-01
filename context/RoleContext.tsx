@@ -18,6 +18,7 @@ function isValidRole(value: string): value is Role {
 type RoleContextValue = {
   role: Role;
   setRole: (role: Role) => Promise<void>;
+  setRoleForEmail: (email: string, newRole: Role) => Promise<void>;
   applyEmail: (email: string | null) => Promise<void>;
   roleMap: RoleMap;
   knownEmails: string[];
@@ -27,6 +28,7 @@ type RoleContextValue = {
 const RoleContext = createContext<RoleContextValue>({
   role: DEFAULT_ROLE,
   setRole: async () => {},
+  setRoleForEmail: async () => {},
   applyEmail: async () => {},
   roleMap: {},
   knownEmails: [],
@@ -135,8 +137,28 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // setRoleForEmail — Admin can update any email's role in roleMap and persist it.
+  // If the email is the currently logged-in user, the live role is also updated.
+  async function setRoleForEmail(email: string, newRole: Role) {
+    if (role !== 'admin') {
+      console.warn('[RoleContext] setRoleForEmail forbidden: role=', role);
+      return;
+    }
+    const newMap = { ...roleMapRef.current, [email]: newRole };
+    roleMapRef.current = newMap;
+    setRoleMap(newMap);
+    try {
+      await AsyncStorage.setItem(ROLE_MAP_KEY, JSON.stringify(newMap));
+    } catch (e) {
+      console.warn('[RoleContext] Failed to save roleMap:', e);
+    }
+    if (email === currentEmailRef.current) {
+      setRoleState(newRole);
+    }
+  }
+
   return (
-    <RoleContext.Provider value={{ role, setRole, applyEmail, roleMap, knownEmails, isLoading }}>
+    <RoleContext.Provider value={{ role, setRole, setRoleForEmail, applyEmail, roleMap, knownEmails, isLoading }}>
       {children}
     </RoleContext.Provider>
   );
